@@ -10,10 +10,12 @@
       for (var i = 0; i < maxPositionNum; i++) {
         positionsPool.push(i);
       }
+
       while (minesPos.length < minesNum && positionsPool.length) {
         var randPos = Math.floor(Math.random() * positionsPool.length);
         minesPos.push(positionsPool[randPos]);
-        positionsPool.splice(randPos, 1);
+        positionsPool[randPos] = positionsPool[positionsPool.length - 1];
+        positionsPool.length--;
       }
       return minesPos;
     };
