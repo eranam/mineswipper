@@ -2,19 +2,15 @@
 
 describe('Service: minePlanter', function () {
 
-  // load the service's module
   beforeEach(function () {
     module('mineswipperAppInternal');
 
-    //add your mocks here
   });
 
-  // instantiate service
   var minePlanter;
   beforeEach(inject(function (_minePlanter_) {
     minePlanter = _minePlanter_;
   }));
-
   function isArrContains(arr, num) {
     return arr.indexOf(num) !== -1;
   }
@@ -28,7 +24,7 @@ describe('Service: minePlanter', function () {
   it('the array length should not exceeds the maxPositionNum parameter', function () {
     expect(minePlanter.generateMinePosition(15, 50).length).toBe(15);
   });
-  it('should contains all the original values', function () {
+  it('should contains only values from the given range', function () {
     var resArr = minePlanter.generateMinePosition(15, 15);
     for (var num = 0; num < 15; num++) {
       expect(isArrContains(resArr, num)).toBeTruthy();

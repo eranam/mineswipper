@@ -36,7 +36,7 @@
       return (x >= 0 && x < game.configurations.xSize) && (y >= 0 && y < game.configurations.ySize);
     }
 
-    function assertCoordinates(game, x, y) {
+    function assertValidCoordinates(game, x, y) {
       if (!angular.isNumber(x) || !angular.isNumber(y)) {
         throw new Error('Coordinate parameters must be numbers.');
       } else if (!isInsideGrid(game, x, y)) {
@@ -66,7 +66,7 @@
       return x + (y * game.configurations.xSize);
     }
 
-    function convertCoordinateToCells(game, coordinates) {
+    function mapCoordinateArrToCellsArr(game, coordinates) {
       var cells = [];
       coordinates.forEach(function (coordinate) {
         if (isInsideGrid(game, coordinate.x, coordinate.y)) {
@@ -77,10 +77,10 @@
       return cells;
     }
 
-    function getNeighbors(game, x, y, onlyAdjacent) {
-      assertCoordinates(game, x, y);
+    function getNeighborsArr(game, x, y, onlyAdjacent) {
+      assertValidCoordinates(game, x, y);
       var neighborsCoordinates = getNeighborsCoordinates(x, y, onlyAdjacent);
-      return convertCoordinateToCells(game, neighborsCoordinates);
+      return mapCoordinateArrToCellsArr(game, neighborsCoordinates);
     }
 
     function updateGameState(game, cell) {
@@ -106,31 +106,19 @@
     }
 
     Game.states = gameStates;
-    Game.prototype.xSize = function xSize() {
-      return this.configurations.xSize;
-    };
-    Game.prototype.ySize = function ySize() {
-      return this.configurations.ySize;
-    };
-    Game.prototype.minesNum = function minesNum() {
-      return this.configurations.mines;
-    };
+
     Game.prototype.getCell = function getCell(x, y) {
-      assertCoordinates(this, x, y);
+      assertValidCoordinates(this, x, y);
       var index = convertCoordinatesToIndex(this, x, y);
       return this.cells[index];
     };
-    Game.prototype.getAdjacentCells = function getAdjacentCells(x, y) {
-      return getNeighbors(this, x, y, true);
-    };
-    Game.prototype.getAllNeighbors = function getAllNeighbors(x, y) {
-      return getNeighbors(this, x, y, false);
-    };
-    Game.prototype.getRevealedCounter = function getRevealedCounter() {
-      return this.revealedCounter;
-    };
+
+    function getAllNeighbors(game, x, y) {
+      return getNeighborsArr(game, x, y, false);
+    }
+
     Game.prototype.reveal = function reveal(x, y) {
-      assertCoordinates(this, x, y);
+      assertValidCoordinates(this, x, y);
       var cell = this.cells[convertCoordinatesToIndex(this, x, y)];
       if (!cell.isRevealed()) {
         cell.reveal();
@@ -145,7 +133,7 @@
       return this.gameState === gameStates.lost;
     };
     Game.prototype.surroundingMinesCount = function surroundingMinesCount(x, y) {
-      var neighbors = this.getAllNeighbors(x, y);
+      var neighbors = getAllNeighbors(this, x, y);
       return neighbors.filter(function (cell) {
         return cell.isMine();
       }).length;
