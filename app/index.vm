@@ -84,6 +84,7 @@
     <script src="scripts/services/cell-factory.js"></script>
     <script src="scripts/services/cell.js"></script>
     <script src="scripts/services/mine-planter.js"></script>
+    <script src="scripts/directives/right-click.js"></script>
     <!-- endbuild --><!-- scripts -->
     <!-- end-process-tags -->
 
