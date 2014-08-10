@@ -3,7 +3,7 @@
 (function () {
 
   /* @ngInject */
-  function gameFactory(Cell, minePlanter, $timeout) {
+  function gameFactory(Cell, minePlanter, $timeout, $interval) {
     var gameStates = {
       inProgress: 'inProgress',
       win: 'win',
@@ -32,9 +32,11 @@
       minePlanter.generateMinePosition(boardSize, this.configurations.mines).forEach(function (indexPos) {
         that.cells[indexPos].setMine();
       });
-      $timeout(function (){
+      $timeout(function () {
         that.announceMsg = undefined;
       }, 1000);
+      this.timerHandle = undefined;
+      this.elapsedTime = 0;
     }
 
     function isInsideGrid(game, x, y) {
@@ -95,14 +97,33 @@
     }
 
     function lose(game) {
+      cancelTimer(game);
       game.gameState = gameStates.lost;
       revealAll(game);
       game.announceMsg = 'You Lose!';
     }
 
     function win(game) {
+      cancelTimer(game);
       game.gameState = gameStates.win;
       game.announceMsg = 'You Win!';
+    }
+
+    function updateTimer(game, startTime) {
+      game.elapsedTime = (new Date().getTime() - startTime);
+    }
+
+    function cancelTimer(game) {
+      $interval.cancel(game.timerHandle);
+    }
+
+    function startTimer(game) {
+      if (!game.timerHandle) {
+        var startTime = new Date().getTime();
+        game.timerHandle = $interval(function () {
+          updateTimer(game, startTime);
+        }, 10);
+      }
     }
 
     function updateGameState(game, cell) {
@@ -141,6 +162,7 @@
 
     Game.prototype.reveal = function reveal(x, y) {
       assertValidCoordinates(this, x, y);
+      startTimer(this);
       var cell = this.cells[convertCoordinatesToIndex(this, x, y)];
       if (!cell.isRevealed()) {
         cell.reveal();

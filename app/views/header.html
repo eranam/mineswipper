@@ -15,6 +15,10 @@
     </form>
     <br>
 
-    <div ng-show="gameCtrl.game">Flag Count: {{gameCtrl.game.flagCount}}</div>
+    <div ng-show="gameCtrl.game">
+        Flags Count: {{gameCtrl.game.flagCount}}
+        <br>
+        Elapsed Time: {{gameCtrl.game.elapsedTime | date:"mm:ss.sss"}}
+    </div>
 </div>
 <hr>
