@@ -12,7 +12,7 @@
                 data-x="{{x}}" data-y="{{y}}"
                 ng-class="{'flagged' : gameCtrl.game.isFlagged(x,y), mine: gameCtrl.game.isMine(x,y), reveal : gameCtrl.game.isRevealed(x,y)}">
                 <div ng-show="gameCtrl.game.isRevealed(x,y);">
-                    {{gameCtrl.game.getLable(x,y)}}
+                    {{gameCtrl.game.getLabel(x,y)}}
                 </div>
             </td>
         </tr>

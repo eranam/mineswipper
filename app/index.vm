@@ -88,6 +88,7 @@
     <script src="scripts/controllers/Game.js"></script>
     <script src="scripts/controllers/game.js"></script>
 
+    <script src="scripts/services/minesweeper-server.js"></script>
     <!-- endbuild --><!-- scripts -->
     <!-- end-process-tags -->
 

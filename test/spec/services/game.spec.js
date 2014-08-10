@@ -75,9 +75,7 @@ describe('Service: game', function () {
       it('should invoke minePlanterMock', function () {
         expect(planterMock.generateMinePosition).toHaveBeenCalledOnce();
       });
-      it('should get the mines count according to the configuration object', function () {
-        expect(game.getMinesCount()).toBe(conf.mines);
-      });
+
       it('should call isReveal upon the cell object', function () {
         testCallingThroghtToCell('isRevealed');
       });
@@ -89,78 +87,17 @@ describe('Service: game', function () {
       });
     });
 
-    describe('reveal mines:', function () {
-      /*
-       it('should initialize revealedCounter to zero', function () {
-       expect(game.getRevealedCounter()).toBe(0);
-       });
-       it('should revealed the mine and update the counter', function () {
-       game.reveal(0, 1);
-       expect(game.getCell(0, 1).reveal).toHaveBeenCalledOnce();
-       expect(game.getRevealedCounter()).toBe(1);
-       });
-       it('should not revealed twice', function () {
-       game.reveal(0, 1);
-       game.reveal(0, 1);
-       expect(game.getCell(0, 1).reveal).toHaveBeenCalledOnce();
-       expect(game.getRevealedCounter()).toBe(1);
-       });
-       */
-    });
+    describe('getLabel method:', function () {
 
-    describe('terminations methods:', function () {
-      function revealAll(game, skipMines) {
-        if (typeof skipMines === 'undefined') {
-          skipMines = false;
-        }
-        for (var x = 0; x < conf.xSize; x++) {
-          for (var y = 0; y < conf.ySize; y++) {
-            if (!skipMines || !game.getCell(x, y).isMine()) {
-              game.reveal(x, y);
-            }
-          }
-        }
-      }
-
-      function revealAllNoneMines(game) {
-        revealAll(game, true);
-      }
-
-      it('should initialized the game such that isWin() return false', function () {
-        expect(game.isWin()).toBeFalsy();
-      });
-      it('should initialized the game such that isLost() return false', function () {
-        expect(game.isLost()).toBeFalsy();
-      });
-      it('should lose after stepping on a mine', function () {
-        game.reveal(0, 0);
-        expect(game.isLost()).toBeTruthy();
-        expect(game.isWin()).toBeFalsy();
-      });
-      it('should Lose after a mine exploded', function () {
-        game.reveal(0, 0);
-        revealAll(game);
-        expect(game.isWin()).toBeFalsy();
-        expect(game.isLost()).toBeTruthy();
-      });
-      it('should win if revealed all non-mine cell', function () {
-        revealAllNoneMines(game);
-        expect(game.isWin()).toBeTruthy();
-        expect(game.isLost()).toBeFalsy();
-      });
-
-    });
-
-    describe('surrounding mines methods:', function () {
-
-      it('should return the number of mines surrounding a cell excluding itself (which is a mine)', function () {
-        expect(game.surroundingMinesCount(0, 0)).toBe(1);
-      });
-      it('should return the number of mines surrounding the center cell', function () {
-        expect(game.surroundingMinesCount(1, 1)).toBe(4);
+      it('should return empty string when asking the label of a cell that is a mine', function () {
+        expect(game.getLabel(0, 0)).toBe('');
       });
       it('should return the number of mines surrounding a non-mine cell', function () {
-        expect(game.surroundingMinesCount(1, 0)).toBe(3);
+        expect(game.getLabel(1, 0)).toBe(3);
+      });
+      it('should return empty string when the surrounding mines count is zero', function () {
+        initializeGame([]);
+        expect(game.getLabel(1, 0)).toBe('');
       });
 
     });
@@ -220,7 +157,6 @@ describe('Service: game', function () {
     it('should reveal only half of the board', function () {
       initializeGame([4, 14, 24, 34, 44, 54, 64, 74, 84, 94]);
       game.reveal(0, 0);
-      expect(game.isWin()).toBeFalsy();
       testCellsRevealedInRange(0, 4, 0, conf.ySize);
       testCellsUNRevealedInRange(4, conf.xSize, 0, conf.ySize);
     });
@@ -228,7 +164,6 @@ describe('Service: game', function () {
     it('should reveal all the board', function () {
       initializeGame([24, 34, 44, 54, 64, 74, 84, 94]);
       game.reveal(0, 0);
-      expect(game.isWin()).toBeTruthy();
       testCellsRevealedInRange(0, 4, 0, conf.ySize);
       testCellsRevealedInRange(5, conf.xSize, 0, conf.ySize);
 

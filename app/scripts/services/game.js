@@ -3,209 +3,181 @@
 (function () {
 
   /* @ngInject */
-  function gameFactory(Cell, minePlanter, $timeout, $interval) {
-    var gameStates = {
-      inProgress: 'inProgress',
-      win: 'win',
-      lost: 'lost'
-    };
-
+  function gameFactory(Cell, minePlanter, $timeout, $interval, $log) {
     function Game(conf) {
-      var that = this;
-      this.configurations = {
+      var game = this;
+      var configurations = {
         xSize: 10,
         ySize: 10,
         mines: 100
       };
-      this.announceMsg = 'Take your move!';
-      angular.extend(this.configurations, conf);
-      this.cells = [];
-      this.revealedCounter = 0;
-      this.flagCount = 0;
-      var boardSize = this.configurations.xSize * this.configurations.ySize;
-      this.maxRevealed = boardSize - this.configurations.mines;
-      var cellsNum = this.configurations.xSize * this.configurations.ySize;
-      for (var i = 0; i < cellsNum; i++) {
-        this.cells.push(new Cell());
-      }
-      this.gameState = gameStates.inProgress;
-      minePlanter.generateMinePosition(boardSize, this.configurations.mines).forEach(function (indexPos) {
-        that.cells[indexPos].setMine();
-      });
-      $timeout(function () {
-        that.announceMsg = undefined;
-      }, 1000);
-      this.timerHandle = undefined;
-      this.elapsedTime = 0;
-    }
+      angular.extend(configurations, conf);
+      var timerHandle = undefined, revealedCounter = 0,
+          boardSize = configurations.xSize * configurations.ySize,
+          maxRevealed = boardSize - configurations.mines,
+          cellsNum = configurations.xSize * configurations.ySize;
 
-    function isInsideGrid(game, x, y) {
-      return (x >= 0 && x < game.configurations.xSize) && (y >= 0 && y < game.configurations.ySize);
-    }
-
-    function assertValidCoordinates(game, x, y) {
-      if (!angular.isNumber(x) || !angular.isNumber(y)) {
-        throw new Error('Coordinate parameters must be numbers.');
-      } else if (!isInsideGrid(game, x, y)) {
-        throw new Error('Coordinate parameters are out of the grid.');
-      }
-    }
-
-    function getNeighborsCoordinates(xVal, yVal, onlyAdjacent) {
-      function isAdjacentCoordinate(indentX, indentY) {
-        return !indentY || !indentX;
+      function getAllNeighbors(x, y) {
+        var neighborsCoordinates = getNeighborsCoordinates(x, y);
+        return mapCoordinateArrToCellsArr(neighborsCoordinates);
       }
 
-      var res = [], indentVal = [1, 0, -1];
-      indentVal.forEach(function (indentX) {
-        indentVal.forEach(function (indentY) {
-          if (indentY || indentX) {
-            if (!onlyAdjacent || isAdjacentCoordinate(indentX, indentY)) {
+      function isInsideGrid(x, y) {
+        return (x >= 0 && x < configurations.xSize) && (y >= 0 && y < configurations.ySize);
+      }
+
+      function getNeighborsCoordinates(xVal, yVal) {
+        var res = [], indentVal = [1, 0, -1];
+        indentVal.forEach(function (indentX) {
+          indentVal.forEach(function (indentY) {
+            if (indentY || indentX) {
               res.push({x: xVal + indentX, y: yVal + indentY});
             }
+          });
+        });
+        return res;
+      }
+
+      function convertCoordinatesToIndex(x, y) {
+        return x + (y * configurations.xSize);
+      }
+
+      function mapCoordinateArrToCellsArr(coordinates) {
+        var cellsArr = [];
+        coordinates.forEach(function (coordinate) {
+          if (isInsideGrid(coordinate.x, coordinate.y)) {
+            var index = convertCoordinatesToIndex(coordinate.x, coordinate.y);
+            cellsArr.push(game.cells[index]);
           }
         });
-      });
-      return res;
-    }
-
-    function convertCoordinatesToIndex(game, x, y) {
-      return x + (y * game.configurations.xSize);
-    }
-
-    function mapCoordinateArrToCellsArr(game, coordinates) {
-      var cells = [];
-      coordinates.forEach(function (coordinate) {
-        if (isInsideGrid(game, coordinate.x, coordinate.y)) {
-          var index = convertCoordinatesToIndex(game, coordinate.x, coordinate.y);
-          cells.push(game.cells[index]);
-        }
-      });
-      return cells;
-    }
-
-    function getNeighborsArr(game, x, y, onlyAdjacent) {
-      assertValidCoordinates(game, x, y);
-      var neighborsCoordinates = getNeighborsCoordinates(x, y, onlyAdjacent);
-      return mapCoordinateArrToCellsArr(game, neighborsCoordinates);
-    }
-
-    function revealAll(game) {
-      game.cells.forEach(function (cell) {
-        cell.reveal();
-      });
-    }
-
-    function lose(game) {
-      cancelTimer(game);
-      game.gameState = gameStates.lost;
-      revealAll(game);
-      game.announceMsg = 'You Lose!';
-    }
-
-    function win(game) {
-      cancelTimer(game);
-      game.gameState = gameStates.win;
-      game.announceMsg = 'You Win!';
-    }
-
-    function updateTimer(game, startTime) {
-      game.elapsedTime = (new Date().getTime() - startTime);
-    }
-
-    function cancelTimer(game) {
-      $interval.cancel(game.timerHandle);
-    }
-
-    function startTimer(game) {
-      if (!game.timerHandle) {
-        var startTime = new Date().getTime();
-        game.timerHandle = $interval(function () {
-          updateTimer(game, startTime);
-        }, 10);
+        return cellsArr;
       }
-    }
 
-    function updateGameState(game, cell) {
-      if (cell.isMine()) {
-        lose(game);
-      } else {
-        game.revealedCounter++;
-        if (game.revealedCounter === game.maxRevealed) {
-          win(game);
-        }
-      }
-    }
-
-    function revealingPropagation(game, x, y) {
-      if (game.surroundingMinesCount(x, y) === 0) {
-        var neighborsCoordinates = getNeighborsCoordinates(x, y).filter(function (coordinate) {
-          return isInsideGrid(game, coordinate.x, coordinate.y);
-        });
-        neighborsCoordinates.forEach(function (coordinate) {
-          game.reveal(coordinate.x, coordinate.y);
+      function revealAll() {
+        game.cells.forEach(function (cell) {
+          cell.reveal();
         });
       }
-    }
 
-    Game.states = gameStates;
-
-    Game.prototype.getCell = function getCell(x, y) {
-      assertValidCoordinates(this, x, y);
-      var index = convertCoordinatesToIndex(this, x, y);
-      return this.cells[index];
-    };
-
-    function getAllNeighbors(game, x, y) {
-      return getNeighborsArr(game, x, y, false);
-    }
-
-    Game.prototype.reveal = function reveal(x, y) {
-      assertValidCoordinates(this, x, y);
-      startTimer(this);
-      var cell = this.cells[convertCoordinatesToIndex(this, x, y)];
-      if (!cell.isRevealed()) {
-        cell.reveal();
-        updateGameState(this, cell);
-        revealingPropagation(this, x, y);
+      function loseGame() {
+        cancelTimer();
+        revealAll();
+        game.announceMsg = 'You Lose!';
       }
-    };
-    Game.prototype.isWin = function isWin() {
-      return this.gameState === gameStates.win;
-    };
-    Game.prototype.isLost = function isLost() {
-      return this.gameState === gameStates.lost;
-    };
-    Game.prototype.surroundingMinesCount = function surroundingMinesCount(x, y) {
-      var neighbors = getAllNeighbors(this, x, y);
-      return neighbors.filter(function (cell) {
-        return cell.isMine();
-      }).length;
-    };
-    Game.prototype.getMinesCount = function getMinesCount() {
-      return this.configurations.mines;
-    };
-    Game.prototype.getY = function getY() {
-      return this.configurations.ySize;
-    };
-    Game.prototype.getX = function getX() {
-      return this.configurations.xSize;
-    };
-    Game.prototype.isRevealed = function isRevealed(x, y) {
-      return this.getCell(x, y).isRevealed();
-    };
-    Game.prototype.isFlagged = function isFlagged(x, y) {
-      return this.getCell(x, y).isFlagged();
-    };
-    Game.prototype.toggleFlag = function getState(x, y) {
-      return this.getCell(x, y).toggleFlag() ? ++this.flagCount : --this.flagCount;
-    };
-    Game.prototype.getLable = function getLable(x, y) {
-      return this.getCell(x, y).isMine() ? '' : this.surroundingMinesCount(x, y) || '';
-    };
-    Game.prototype.isMine = function getLable(x, y) {
-      return this.getCell(x, y).isMine();
-    };
+
+      function winGame() {
+        cancelTimer();
+        game.announceMsg = 'You Win!';
+      }
+
+      function updateTimer(startTime) {
+        game.elapsedTime = (new Date().getTime() - startTime);
+      }
+
+      function cancelTimer() {
+        $interval.cancel(timerHandle);
+      }
+
+      function startTimerIfNotRunning() {
+        if (!timerHandle) {
+          var startTime = new Date().getTime();
+          timerHandle = $interval(function () {
+            updateTimer(startTime);
+          }, 10);
+        }
+      }
+
+      function checkForGameTermination(cell) {
+        if (cell.isMine()) {
+          $log.log('lost game');
+          loseGame();
+        } else {
+          revealedCounter++;
+          if (revealedCounter === maxRevealed) {
+            $log.log('win game');
+            winGame();
+          }
+        }
+      }
+
+      function propagateCellReveal(x, y) {
+        if (surroundingMinesCount(x, y) === 0) {
+          var neighborsCoordinates = getNeighborsCoordinates(x, y).filter(function (coordinate) {
+            return isInsideGrid(coordinate.x, coordinate.y);
+          });
+          neighborsCoordinates.forEach(function (coordinate) {
+            game.reveal(coordinate.x, coordinate.y);
+          });
+        }
+      }
+
+      function getCell(x, y) {
+        var index = convertCoordinatesToIndex(x, y);
+        return game.cells[index];
+      }
+
+      function surroundingMinesCount(x, y) {
+        var neighbors = getAllNeighbors(x, y);
+        return neighbors.filter(function (cell) {
+          return cell.isMine();
+        }).length;
+      }
+
+      this.cells = [];
+      this.flagCount = 0;
+      this.elapsedTime = 0;
+
+      this.reveal = function reveal(x, y) {
+        startTimerIfNotRunning();
+        var cell = this.cells[convertCoordinatesToIndex(x, y)];
+        if (!cell.isRevealed()) {
+          cell.reveal();
+          checkForGameTermination(cell);
+          propagateCellReveal(x, y);
+        }
+      };
+
+      this.getY = function getY() {
+        return configurations.ySize;
+      };
+
+      this.getX = function getX() {
+        return configurations.xSize;
+      };
+
+      this.isRevealed = function isRevealed(x, y) {
+        return getCell(x, y).isRevealed();
+      };
+
+      this.isFlagged = function isFlagged(x, y) {
+        return getCell(x, y).isFlagged();
+      };
+
+      this.toggleFlag = function getState(x, y) {
+        return getCell(x, y).toggleFlag() ? ++game.flagCount : --game.flagCount;
+      };
+
+      this.getLabel = function getLabel(x, y) {
+        return getCell(x, y).isMine() ? '' : surroundingMinesCount(x, y) || '';
+      };
+
+      this.isMine = function isMine(x, y) {
+        return getCell(x, y).isMine();
+      };
+
+      this.announceMsg = 'Take your move!';
+      for (var i = 0; i < cellsNum; i++) {
+        game.cells.push(new Cell());
+      }
+      minePlanter.generateMinePosition(boardSize, configurations.mines).forEach(function (indexPos) {
+        game.cells[indexPos].setMine();
+      });
+      $timeout(function () {
+        game.announceMsg = undefined;
+      }, 1000);
+      this.getCell = getCell;
+    }
+
     return Game;
   }
 
