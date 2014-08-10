@@ -3,7 +3,7 @@
 (function () {
 
   /* @ngInject */
-  function gameFactory(Cell, minePlanter) {
+  function gameFactory(Cell, minePlanter, $timeout) {
     var gameStates = {
       inProgress: 'inProgress',
       win: 'win',
@@ -17,9 +17,11 @@
         ySize: 10,
         mines: 100
       };
+      this.announceMsg = 'Take your move!';
       angular.extend(this.configurations, conf);
       this.cells = [];
       this.revealedCounter = 0;
+      this.flagCount = 0;
       var boardSize = this.configurations.xSize * this.configurations.ySize;
       this.maxRevealed = boardSize - this.configurations.mines;
       var cellsNum = this.configurations.xSize * this.configurations.ySize;
@@ -27,9 +29,12 @@
         this.cells.push(new Cell());
       }
       this.gameState = gameStates.inProgress;
-      minePlanter.generateMinePosition(this.configurations.mines, boardSize).forEach(function (indexPos) {
+      minePlanter.generateMinePosition(boardSize, this.configurations.mines).forEach(function (indexPos) {
         that.cells[indexPos].setMine();
       });
+      $timeout(function (){
+        that.announceMsg = undefined;
+      }, 1000);
     }
 
     function isInsideGrid(game, x, y) {
@@ -83,13 +88,30 @@
       return mapCoordinateArrToCellsArr(game, neighborsCoordinates);
     }
 
+    function revealAll(game) {
+      game.cells.forEach(function (cell) {
+        cell.reveal();
+      });
+    }
+
+    function lose(game) {
+      game.gameState = gameStates.lost;
+      revealAll(game);
+      game.announceMsg = 'You Lose!';
+    }
+
+    function win(game) {
+      game.gameState = gameStates.win;
+      game.announceMsg = 'You Win!';
+    }
+
     function updateGameState(game, cell) {
       if (cell.isMine()) {
-        game.gameState = gameStates.lost;
+        lose(game);
       } else {
         game.revealedCounter++;
         if (game.revealedCounter === game.maxRevealed) {
-          game.gameState = gameStates.win;
+          win(game);
         }
       }
     }
@@ -138,7 +160,30 @@
         return cell.isMine();
       }).length;
     };
-
+    Game.prototype.getMinesCount = function getMinesCount() {
+      return this.configurations.mines;
+    };
+    Game.prototype.getY = function getY() {
+      return this.configurations.ySize;
+    };
+    Game.prototype.getX = function getX() {
+      return this.configurations.xSize;
+    };
+    Game.prototype.isRevealed = function isRevealed(x, y) {
+      return this.getCell(x, y).isRevealed();
+    };
+    Game.prototype.isFlagged = function isFlagged(x, y) {
+      return this.getCell(x, y).isFlagged();
+    };
+    Game.prototype.toggleFlag = function getState(x, y) {
+      return this.getCell(x, y).toggleFlag() ? ++this.flagCount : --this.flagCount;
+    };
+    Game.prototype.getLable = function getLable(x, y) {
+      return this.getCell(x, y).isMine() ? '' : this.surroundingMinesCount(x, y) || '';
+    };
+    Game.prototype.isMine = function getLable(x, y) {
+      return this.getCell(x, y).isMine();
+    };
     return Game;
   }
 

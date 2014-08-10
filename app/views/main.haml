@@ -1,4 +1,4 @@
-<div ng-init="title='moshe'"  right-click="title = 'eran2'">
-{{title}}
+<div ng-controller="GameController as gameCtrl">
+<div class="header" ng-include="'views/header.html'"></div>
+<div ng-show="gameCtrl.game" class="game-section" ng-include="'views/game.html'"></div>
 </div>
-

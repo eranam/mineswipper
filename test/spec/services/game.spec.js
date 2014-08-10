@@ -24,10 +24,13 @@ describe('Service: game', function () {
     spy.isRevealed = jasmine.createSpy('"cell.isRevealed()"').andCallFake(function () {
       return revealed;
     });
+    spy.toggleFlag = jasmine.createSpy('"cell.toggleFlag()"');
+    spy.isFlagged = jasmine.createSpy('"cell.isFlagged()"');
 
     spy.isMine = jasmine.createSpy('"cell.isMine()"').andCallFake(function () {
       return isMine && enableMines;
     });
+
     spy.setMine = jasmine.createSpy('"cell.setMine()"').andCallFake(function () {
       isMine = true;
     });
@@ -63,28 +66,46 @@ describe('Service: game', function () {
     });
 
     describe('configurations:', function () {
+      function testCallingThroghtToCell(methodName) {
+        game[methodName](0, 0);
+        var cell = game.getCell(0, 0);
+        expect(cell[methodName]).toHaveBeenCalledOnce();
+      }
+
       it('should invoke minePlanterMock', function () {
         expect(planterMock.generateMinePosition).toHaveBeenCalledOnce();
+      });
+      it('should get the mines count according to the configuration object', function () {
+        expect(game.getMinesCount()).toBe(conf.mines);
+      });
+      it('should call isReveal upon the cell object', function () {
+        testCallingThroghtToCell('isRevealed');
+      });
+      it('should call isFlagged upon the cell object', function () {
+        testCallingThroghtToCell('isFlagged');
+      });
+      it('should call toggleFlagged upon the cell object', function () {
+        testCallingThroghtToCell('toggleFlag');
       });
     });
 
     describe('reveal mines:', function () {
       /*
-      it('should initialize revealedCounter to zero', function () {
-        expect(game.getRevealedCounter()).toBe(0);
-      });
-      it('should revealed the mine and update the counter', function () {
-        game.reveal(0, 1);
-        expect(game.getCell(0, 1).reveal).toHaveBeenCalledOnce();
-        expect(game.getRevealedCounter()).toBe(1);
-      });
-      it('should not revealed twice', function () {
-        game.reveal(0, 1);
-        game.reveal(0, 1);
-        expect(game.getCell(0, 1).reveal).toHaveBeenCalledOnce();
-        expect(game.getRevealedCounter()).toBe(1);
-      });
-      */
+       it('should initialize revealedCounter to zero', function () {
+       expect(game.getRevealedCounter()).toBe(0);
+       });
+       it('should revealed the mine and update the counter', function () {
+       game.reveal(0, 1);
+       expect(game.getCell(0, 1).reveal).toHaveBeenCalledOnce();
+       expect(game.getRevealedCounter()).toBe(1);
+       });
+       it('should not revealed twice', function () {
+       game.reveal(0, 1);
+       game.reveal(0, 1);
+       expect(game.getCell(0, 1).reveal).toHaveBeenCalledOnce();
+       expect(game.getRevealedCounter()).toBe(1);
+       });
+       */
     });
 
     describe('terminations methods:', function () {

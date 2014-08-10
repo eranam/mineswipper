@@ -5,7 +5,7 @@ $font-helvetica75: "HelveticaNeueW01-75Bold", "HelveticaNeueW02-75Bold", "Helvet
 
 .container {
   margin: auto;
-  width: 300px;
+  width: 1024px;
 }
 
 .hero-unit {
@@ -25,4 +25,44 @@ $font-helvetica75: "HelveticaNeueW01-75Bold", "HelveticaNeueW02-75Bold", "Helvet
   font-size: 60px;
   line-height: 1;
   letter-spacing: -1px;
+}
+
+.game-cell {
+  width: 50px;
+  height: 50px;
+  margin: 2px;
+  padding: 0;
+  display: inline-block;
+  text-align: center;
+  line-height: 50px;
+  border: 2px solid #000000;
+}
+
+.center-display {
+  margin: 0 auto;
+}
+
+.game-cell:hover {
+  border: 2px solid crimson;
+}
+
+.flagged {
+  background-color: darkseagreen;
+}
+.reveal {
+  background-color: antiquewhite;
+}
+.mine.reveal {
+  background-image: image-url('yeoman.png');
+}
+.announce-msg {
+  position: fixed;
+  width: 10%;
+  top: 45%;
+  left: 45%;
+  padding: 40px;
+  border: 5px solid black;
+  background-color: greenyellow;
+  box-shadow: 10px 10px 10px #888888;
+  text-align: center;
 }

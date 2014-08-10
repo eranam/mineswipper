@@ -1,0 +1,20 @@
+<div class="center-display">
+    <h1>Minesweeper Game!</h1>
+
+    <form id="game-configurations">
+        <label for="xSize">Choose the size for the X axis:</label>
+        <input ng-model="conf.xSize" value="{{conf.xSize}}" id="xSize" name="xSize" type="number">
+        <br>
+        <label for="ySize">Choose the size for the Y axis:</label>
+        <input ng-model="conf.ySize" value="{{conf.ySize}}" id="ySize" name="ySize" type="number">
+        <br>
+        <label for="minesNum">Choose number of mines:</label>
+        <input ng-model="conf.mines" value="{{conf.mines}}" id="minesNum" name="minesNum" type="number">
+        <br>
+        <button id="start-game-btn" ng-click="gameCtrl.startGame();">Start a new Game!</button>
+    </form>
+    <br>
+
+    <div ng-show="gameCtrl.game">Flag Count: {{gameCtrl.game.flagCount}}</div>
+</div>
+<hr>

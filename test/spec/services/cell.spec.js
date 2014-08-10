@@ -30,5 +30,13 @@ describe('Service: cell', function () {
     cellObj.setMine();
     expect(cellObj.isMine()).toBeTruthy();
   });
-
+  it('should initialize the flag to false', function () {
+    expect(cellObj.isFlagged()).toBe(false);
+  });
+  it('should toggle the flag', function () {
+    cellObj.toggleFlag();
+    expect(cellObj.isFlagged()).toBe(true);
+    cellObj.toggleFlag();
+    expect(cellObj.isFlagged()).toBe(false);
+  });
 });

@@ -78,13 +78,16 @@
     <!-- build:js({.tmp,app}) scripts/scripts.js -->
     <script src="scripts/app.js"></script>
     <script src="scripts/controllers/main.js"></script>
-    <script src="scripts/services/cellsFactory.js"></script>
-    <script src="scripts/services/gameGrid.js"></script>
+
+
     <script src="scripts/services/game.js"></script>
-    <script src="scripts/services/cell-factory.js"></script>
+
     <script src="scripts/services/cell.js"></script>
     <script src="scripts/services/mine-planter.js"></script>
     <script src="scripts/directives/right-click.js"></script>
+    <script src="scripts/controllers/Game.js"></script>
+    <script src="scripts/controllers/game.js"></script>
+
     <!-- endbuild --><!-- scripts -->
     <!-- end-process-tags -->
 

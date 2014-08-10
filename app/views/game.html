@@ -1,0 +1,21 @@
+<div>
+    <div ng-show="gameCtrl.game.announceMsg" class="announce-msg">
+        {{gameCtrl.game.announceMsg}}
+    </div>
+    <table class="center-display">
+        <tbody>
+        <tr class="rows" ng-repeat="y in gameCtrl.range(gameCtrl.game.getY())">
+            <td class="cols game-cell"
+                ng-repeat="x in gameCtrl.range(gameCtrl.game.getX())"
+                right-click="gameCtrl.game.toggleFlag(x,y);"
+                ng-click="gameCtrl.game.reveal(x,y);"
+                data-x="{{x}}" data-y="{{y}}"
+                ng-class="{'flagged' : gameCtrl.game.isFlagged(x,y), mine: gameCtrl.game.isMine(x,y), reveal : gameCtrl.game.isRevealed(x,y)}">
+                <div ng-show="gameCtrl.game.isRevealed(x,y);">
+                    {{gameCtrl.game.getLable(x,y)}}
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

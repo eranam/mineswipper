@@ -15,7 +15,7 @@
         var randPos = Math.floor(Math.random() * positionsPool.length);
         minesPos.push(positionsPool[randPos]);
         positionsPool[randPos] = positionsPool[positionsPool.length - 1];
-        positionsPool.length--;
+        positionsPool.pop();
       }
       return minesPos;
     };
