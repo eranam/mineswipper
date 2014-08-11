@@ -13,24 +13,23 @@ describe('Service: game', function () {
     return planterMock;
   }
 
-  function cellFactoryMock() {
+  function cellFactoryMock(x, y) {
     cellsCount++;
-    var spy = jasmine.createSpy(String(cellsCount)), revealed = false, isMine = false;
-
+    var spy = jasmine.createSpy(String(cellsCount)), revealed = false, isMine = false, flag = false;
+    spy.x = x;
+    spy.y = y;
     spy.reveal = jasmine.createSpy('"cell.reveal()"').andCallFake(function () {
       revealed = true;
     });
-
-    spy.isRevealed = jasmine.createSpy('"cell.isRevealed()"').andCallFake(function () {
-      return revealed;
+    spy.isRevealed = jasmine.createSpy('"cell.isRevealed()"').andReturn(revealed);
+    spy.toggleFlag = jasmine.createSpy('"cell.toggleFlag()"').andCallFake(function () {
+      flag = !flag;
+      return flag;
     });
-    spy.toggleFlag = jasmine.createSpy('"cell.toggleFlag()"');
-    spy.isFlagged = jasmine.createSpy('"cell.isFlagged()"');
-
-    spy.isMine = jasmine.createSpy('"cell.isMine()"').andCallFake(function () {
+    spy.isFlagged = jasmine.createSpy('"cell.isFlagged()"').andReturn(flag);
+    spy.isMine = jasmine.createSpy('"cell.isMine()"').andCallFake(function (){
       return isMine && enableMines;
     });
-
     spy.setMine = jasmine.createSpy('"cell.setMine()"').andCallFake(function () {
       isMine = true;
     });
@@ -39,7 +38,8 @@ describe('Service: game', function () {
   }
 
   function initializeGame(minesArr) {
-    minesPosArr = minesArr;
+    cellsCount = -1;
+    minesPosArr = minesArr.slice(0);
     inject(function (Game) {
       game = new Game(conf);
     });
@@ -47,7 +47,6 @@ describe('Service: game', function () {
 
   beforeEach(function () {
     module('mineswipperAppInternal');
-    cellsCount = -1;
     planterMock = minePlanterMock();
     module({
       Cell: cellFactoryMock,
@@ -66,38 +65,41 @@ describe('Service: game', function () {
     });
 
     describe('configurations:', function () {
-      function testCallingThroghtToCell(methodName) {
-        game[methodName](0, 0);
-        var cell = game.getCell(0, 0);
-        expect(cell[methodName]).toHaveBeenCalledOnce();
-      }
 
       it('should invoke minePlanterMock', function () {
         expect(planterMock.generateMinePosition).toHaveBeenCalledOnce();
       });
 
-      it('should call isReveal upon the cell object', function () {
-        testCallingThroghtToCell('isRevealed');
-      });
-      it('should call isFlagged upon the cell object', function () {
-        testCallingThroghtToCell('isFlagged');
-      });
       it('should call toggleFlagged upon the cell object', function () {
-        testCallingThroghtToCell('toggleFlag');
+        var cell = game.getCell(0, 0);
+        game.toggleFlag(cell);
+        expect(cell.toggleFlag).toHaveBeenCalledOnce();
       });
+
+      it('should start flag counter with zero', function () {
+        expect(game.flagCount).toBe(0);
+      });
+
+      it('should increase flag count after flagging a cell', function () {
+        game.toggleFlag(game.getCell(0, 0));
+        expect(game.flagCount).toBe(1);
+      });
+
     });
 
     describe('getLabel method:', function () {
-
+      beforeEach(function () {
+        initializeGame([0, 2, 4, 6, 8]);
+      });
       it('should return empty string when asking the label of a cell that is a mine', function () {
-        expect(game.getLabel(0, 0)).toBe('');
+        expect(game.getLabel(game.getCell(0, 0))).toBe('');
       });
       it('should return the number of mines surrounding a non-mine cell', function () {
-        expect(game.getLabel(1, 0)).toBe(3);
+        expect(game.getLabel(game.getCell(1, 0))).toBe(3);
       });
       it('should return empty string when the surrounding mines count is zero', function () {
         initializeGame([]);
-        expect(game.getLabel(1, 0)).toBe('');
+        expect(game.getLabel(game.getCell(1, 0))).toBe('');
       });
 
     });
@@ -111,7 +113,8 @@ describe('Service: game', function () {
       });
 
       it('should reveal all the board if there is no mines', function () {
-        game.reveal(0, 0);
+        var someCell = game.getCell(0, 0);
+        game.reveal(someCell);
         for (var x = 0; x < conf.xSize; x++) {
           for (var y = 0; y < conf.ySize; y++) {
             expect(game.getCell(x, y).isRevealed()).toBeTruthy();
@@ -156,14 +159,16 @@ describe('Service: game', function () {
 
     it('should reveal only half of the board', function () {
       initializeGame([4, 14, 24, 34, 44, 54, 64, 74, 84, 94]);
-      game.reveal(0, 0);
+      var cell = game.getCell(0, 0);
+      game.reveal(cell);
       testCellsRevealedInRange(0, 4, 0, conf.ySize);
       testCellsUNRevealedInRange(4, conf.xSize, 0, conf.ySize);
     });
 
     it('should reveal all the board', function () {
       initializeGame([24, 34, 44, 54, 64, 74, 84, 94]);
-      game.reveal(0, 0);
+      var cell = game.getCell(0, 0);
+      game.reveal(cell);
       testCellsRevealedInRange(0, 4, 0, conf.ySize);
       testCellsRevealedInRange(5, conf.xSize, 0, conf.ySize);
 

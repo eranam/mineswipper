@@ -4,31 +4,31 @@
 
   /* @ngInject */
   function cellFactory() {
-    function Cell() {
-      this.revealState = false;
-      this.mineFlag = false;
-      this.flag = false;
+    function Cell(xPos, yPos) {
+      var revealState = false, mineFlag = false, flag = false;
+      this.x = xPos;
+      this.y = yPos;
+      this.isRevealed = function isRevealed() {
+        return revealState;
+      };
+      this.reveal = function reveal() {
+        revealState = true;
+      };
+      this.isMine = function isMine() {
+        return mineFlag;
+      };
+      this.setMine = function setMine() {
+        mineFlag = true;
+      };
+      this.isFlagged = function isFlagged() {
+        return flag;
+      };
+      this.toggleFlag = function toggleFlag() {
+        flag = !flag;
+        return flag;
+      };
     }
 
-    Cell.prototype.isRevealed = function isRevealed() {
-      return this.revealState;
-    };
-    Cell.prototype.reveal = function reveal() {
-      this.revealState = true;
-    };
-    Cell.prototype.isMine = function isMine() {
-      return this.mineFlag;
-    };
-    Cell.prototype.setMine = function setMine() {
-      this.mineFlag = true;
-    };
-    Cell.prototype.isFlagged = function isFlagged() {
-      return this.flag;
-    };
-    Cell.prototype.toggleFlag = function toggleFlag() {
-      this.flag = !this.flag;
-      return this.flag;
-    };
     return Cell;
   }
 

@@ -10,10 +10,12 @@ describe('Service: cell', function () {
   });
 
   // instantiate service
-  var Cell, cellObj;
+  var Cell, cellObj, xPos, yPos;
   beforeEach(inject(function (_Cell_) {
     Cell = _Cell_;
-    cellObj = new Cell();
+    xPos = 5;
+    yPos = 6;
+    cellObj = new Cell(xPos, yPos);
   }));
 
   it('should initialized to be unrevealed', function () {
@@ -38,5 +40,9 @@ describe('Service: cell', function () {
     expect(cellObj.isFlagged()).toBe(true);
     cellObj.toggleFlag();
     expect(cellObj.isFlagged()).toBe(false);
+  });
+  it('should expose x, y coordinate on cell-object', function () {
+    expect(cellObj.x).toBe(xPos);
+    expect(cellObj.y).toBe(yPos);
   });
 });

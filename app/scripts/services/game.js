@@ -12,17 +12,16 @@
         mines: 100
       };
       angular.extend(configurations, conf);
-      var timerHandle = undefined, revealedCounter = 0,
+      var stopWathcHandle, revealedCellsCount = 0,
           boardSize = configurations.xSize * configurations.ySize,
-          maxRevealed = boardSize - configurations.mines,
-          cellsNum = configurations.xSize * configurations.ySize;
+          maxRevealedCells = boardSize - configurations.mines;
 
-      function getAllNeighbors(x, y) {
+      function getNeighborCells(x, y) {
         var neighborsCoordinates = getNeighborsCoordinates(x, y);
-        return mapCoordinateArrToCellsArr(neighborsCoordinates);
+        return mapCoordinatesArrToCellsArr(neighborsCoordinates);
       }
 
-      function isInsideGrid(x, y) {
+      function isInsideTheGameGrid(x, y) {
         return (x >= 0 && x < configurations.xSize) && (y >= 0 && y < configurations.ySize);
       }
 
@@ -38,139 +37,139 @@
         return res;
       }
 
-      function convertCoordinatesToIndex(x, y) {
-        return x + (y * configurations.xSize);
+      function convertIndexToCoordinates(indx) {
+        return {
+          x: indx % configurations.ySize,
+          y: Math.floor(indx / configurations.ySize)
+        };
       }
 
-      function mapCoordinateArrToCellsArr(coordinates) {
+      function mapCoordinatesArrToCellsArr(coordinates) {
         var cellsArr = [];
         coordinates.forEach(function (coordinate) {
-          if (isInsideGrid(coordinate.x, coordinate.y)) {
-            var index = convertCoordinatesToIndex(coordinate.x, coordinate.y);
-            cellsArr.push(game.cells[index]);
+          if (isInsideTheGameGrid(coordinate.x, coordinate.y)) {
+            cellsArr.push(rows[coordinate.x][coordinate.y]);
           }
         });
         return cellsArr;
       }
 
-      function revealAll() {
-        game.cells.forEach(function (cell) {
-          cell.reveal();
+      function revealAllCells() {
+        rows.forEach(function (row) {
+          row.forEach(function (cell) {
+            cell.reveal();
+          });
         });
       }
 
       function loseGame() {
-        cancelTimer();
-        revealAll();
+        $log.log('lost game');
+        cancelStopWatch();
+        revealAllCells();
         game.announceMsg = 'You Lose!';
       }
 
       function winGame() {
-        cancelTimer();
+        $log.log('win game');
+        cancelStopWatch();
         game.announceMsg = 'You Win!';
       }
 
-      function updateTimer(startTime) {
+      function updateElapsedTime(startTime) {
         game.elapsedTime = (new Date().getTime() - startTime);
       }
 
-      function cancelTimer() {
-        $interval.cancel(timerHandle);
+      function cancelStopWatch() {
+        $interval.cancel(stopWathcHandle);
       }
 
-      function startTimerIfNotRunning() {
-        if (!timerHandle) {
+      function startStopWatchIfNotRunning() {
+        if (!stopWathcHandle) {
           var startTime = new Date().getTime();
-          timerHandle = $interval(function () {
-            updateTimer(startTime);
+          stopWathcHandle = $interval(function () {
+            updateElapsedTime(startTime);
           }, 10);
         }
       }
 
-      function checkForGameTermination(cell) {
-        if (cell.isMine()) {
-          $log.log('lost game');
+      function checkForGameTermination(lastPlayedCell) {
+        if (lastPlayedCell.isMine()) {
           loseGame();
         } else {
-          revealedCounter++;
-          if (revealedCounter === maxRevealed) {
-            $log.log('win game');
+          revealedCellsCount++;
+          if (revealedCellsCount === maxRevealedCells) {
             winGame();
           }
         }
       }
 
-      function propagateCellReveal(x, y) {
+      function propagateCellRevealing(x, y) {
         if (surroundingMinesCount(x, y) === 0) {
-          var neighborsCoordinates = getNeighborsCoordinates(x, y).filter(function (coordinate) {
-            return isInsideGrid(coordinate.x, coordinate.y);
+          var validNeighborCoordinates = getNeighborsCoordinates(x, y).filter(function (coordinate) {
+            return isInsideTheGameGrid(coordinate.x, coordinate.y);
           });
-          neighborsCoordinates.forEach(function (coordinate) {
-            game.reveal(coordinate.x, coordinate.y);
+          validNeighborCoordinates.forEach(function (coordinate) {
+            game.reveal(getCell(coordinate.x, coordinate.y));
           });
         }
       }
 
+      /*
+       accepts either a cell object or <x, y> coordinates.
+       */
       function getCell(x, y) {
-        var index = convertCoordinatesToIndex(x, y);
-        return game.cells[index];
+        if (arguments.length === 1) {
+          x = arguments[0].x;
+          y = arguments[0].y;
+        }
+        return rows[y][x];
       }
 
       function surroundingMinesCount(x, y) {
-        var neighbors = getAllNeighbors(x, y);
+        var neighbors = getNeighborCells(x, y);
         return neighbors.filter(function (cell) {
           return cell.isMine();
         }).length;
       }
 
-      this.cells = [];
+      var rows = [];
       this.flagCount = 0;
       this.elapsedTime = 0;
 
-      this.reveal = function reveal(x, y) {
-        startTimerIfNotRunning();
-        var cell = this.cells[convertCoordinatesToIndex(x, y)];
-        if (!cell.isRevealed()) {
-          cell.reveal();
-          checkForGameTermination(cell);
-          propagateCellReveal(x, y);
+      this.reveal = function reveal(lastPlayedCell) {
+        startStopWatchIfNotRunning();
+        if (!lastPlayedCell.isRevealed()) {
+          lastPlayedCell.reveal();
+          checkForGameTermination(lastPlayedCell);
+          propagateCellRevealing(lastPlayedCell.x, lastPlayedCell.y);
         }
       };
 
-      this.getY = function getY() {
-        return configurations.ySize;
+      this.getRows = function getRows() {
+        return rows;
       };
 
-      this.getX = function getX() {
-        return configurations.xSize;
+      this.toggleFlag = function toggleFlag(cell) {
+        if (cell.toggleFlag()) {
+          game.flagCount++;
+        } else {
+          game.flagCount--;
+        }
       };
 
-      this.isRevealed = function isRevealed(x, y) {
-        return getCell(x, y).isRevealed();
-      };
-
-      this.isFlagged = function isFlagged(x, y) {
-        return getCell(x, y).isFlagged();
-      };
-
-      this.toggleFlag = function getState(x, y) {
-        return getCell(x, y).toggleFlag() ? ++game.flagCount : --game.flagCount;
-      };
-
-      this.getLabel = function getLabel(x, y) {
-        return getCell(x, y).isMine() ? '' : surroundingMinesCount(x, y) || '';
-      };
-
-      this.isMine = function isMine(x, y) {
-        return getCell(x, y).isMine();
+      this.getLabel = function getLabel(cell) {
+        return cell.isMine() ? '' : surroundingMinesCount(cell.x, cell.y) || '';
       };
 
       this.announceMsg = 'Take your move!';
-      for (var i = 0; i < cellsNum; i++) {
-        game.cells.push(new Cell());
+      for (var x = 0; x < configurations.xSize; x++) {
+        for (var y = 0, row = []; y < configurations.ySize; y++) {
+          row.push(new Cell(x, y));
+        }
+        rows.push(row);
       }
       minePlanter.generateMinePosition(boardSize, configurations.mines).forEach(function (indexPos) {
-        game.cells[indexPos].setMine();
+        getCell(convertIndexToCoordinates(indexPos)).setMine();
       });
       $timeout(function () {
         game.announceMsg = undefined;
