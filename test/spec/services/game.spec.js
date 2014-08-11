@@ -6,7 +6,7 @@ describe('Service: game', function () {
 
   function minePlanterMock() {
     var planterMock = {};
-    planterMock.generateMinePosition = function () {
+    planterMock.genRandomIndexesInRange = function () {
       return minesPosArr;
     };
     spyOn(planterMock, 'generateMinePosition').andCallThrough();
@@ -67,7 +67,7 @@ describe('Service: game', function () {
     describe('configurations:', function () {
 
       it('should invoke minePlanterMock', function () {
-        expect(planterMock.generateMinePosition).toHaveBeenCalledOnce();
+        expect(planterMock.genRandomIndexesInRange).toHaveBeenCalledOnce();
       });
 
       it('should call toggleFlagged upon the cell object', function () {

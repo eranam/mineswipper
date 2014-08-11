@@ -11,7 +11,7 @@ describe('mineswipperApp Main Page', function () {
     browser.addMockModule('mineswipperAppMocks', function () {
       module({
         minePlanter: {
-          generateMinePosition: function () {
+          genRandomIndexesInRange: function () {
             return [0];
           }
         }

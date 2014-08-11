@@ -18,13 +18,6 @@
       $log.log('configure successfully: ' + $scope.conf.xSize + ' ' + $scope.conf.ySize + ' ' + $scope.conf.mines);
     };
 
-    this.range = function (num) {
-      var arr = [];
-      for (var i = 0; i < num; i++) {
-        arr.push(i);
-      }
-      return arr;
-    };
   }
 
   angular

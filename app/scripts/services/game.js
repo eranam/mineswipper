@@ -168,7 +168,7 @@
         }
         rows.push(row);
       }
-      minePlanter.generateMinePosition(boardSize, configurations.mines).forEach(function (indexPos) {
+      minePlanter.genRandomIndexesInRange(boardSize, configurations.mines).forEach(function (indexPos) {
         getCell(convertIndexToCoordinates(indexPos)).setMine();
       });
       $timeout(function () {
