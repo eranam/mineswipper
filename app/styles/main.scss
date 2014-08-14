@@ -2,67 +2,61 @@ $font-helvetica45: "HelveticaNeueW01-45Ligh", "HelveticaNeueW02-45Ligh", "Helvet
 $font-helvetica55: "HelveticaNeueW01-55Roma", "HelveticaNeueW02-55Roma", "HelveticaNeueW10-55Roma", sans-serif;
 $font-helvetica65: "HelveticaNeueW01-65Medi", "HelveticaNeueW02-65Medi", "HelveticaNeueW10-65Medi", sans-serif;
 $font-helvetica75: "HelveticaNeueW01-75Bold", "HelveticaNeueW02-75Bold", "HelveticaNeueW10-75Bold", sans-serif;
+@import url(http://fonts.googleapis.com/css?family=Lobster);
+
+html {
+  background-image: image-url('bg-image.png');
+}
 
 .container {
   margin: auto;
   width: 1024px;
-}
-
-.hero-unit {
-  position: absolute;
-  width: 300px;
-  font-family: $font-helvetica55;
-  font-size: 18px;
-  font-weight: 200;
-  line-height: 30px;
-  background-color: #eee;
-  border-radius: 6px;
-  padding: 60px;
-}
-
-.hero-unit h1 {
-  font-family: $font-helvetica75;
-  font-size: 60px;
-  line-height: 1;
-  letter-spacing: -1px;
+  text-align: center;
+  h1 {
+    font-family: 'Lobster', cursive;
+  }
 }
 
 .game-cell {
   width: 50px;
   height: 50px;
-  margin: 2px;
+  margin: 3px;
   padding: 0;
   display: inline-block;
   text-align: center;
   line-height: 50px;
   border: 2px solid #000000;
+  border-radius: 10px;
+
+  &:hover {
+    border: 2px solid crimson;
+  }
+  &.flagged {
+    background-color: darkseagreen;
+  }
+  &.reveal {
+    background-color: antiquewhite;
+  }
 }
 
 .center-display {
   margin: 0 auto;
 }
 
-.game-cell:hover {
-  border: 2px solid crimson;
-}
-
-.flagged {
-  background-color: darkseagreen;
-}
-.reveal {
-  background-color: antiquewhite;
-}
 .mine.reveal {
   background-image: image-url('yeoman.png');
 }
+
 .announce-msg {
-  position: fixed;
-  width: 10%;
-  top: 45%;
-  left: 45%;
-  padding: 40px;
+  position: absolute;
+  width: 16%;
+  height: 60px;
+  line-height: 60px;
+  top: 40%;
+  left: 42%;
+  margin: auto;
   border: 5px solid black;
   background-color: greenyellow;
   box-shadow: 10px 10px 10px #888888;
-  text-align: center;
+  border-radius: 10px;
 }

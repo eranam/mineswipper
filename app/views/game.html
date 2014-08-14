@@ -1,6 +1,6 @@
 <div>
-    <div ng-show="gameCtrl.game.announceMsg" class="announce-msg">
-        {{gameCtrl.game.announceMsg}}
+    <div ng-show="gameCtrl.announceBoard.isAnnouncing()" class="announce-msg">
+        {{gameCtrl.announceBoard.getContent()}}
     </div>
     <table class="center-display">
         <tbody>

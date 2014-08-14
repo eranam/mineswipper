@@ -3,7 +3,7 @@
 (function () {
 
   /* @ngInject */
-  function gameFactory(Cell, minePlanter, $timeout, $interval, $log) {
+  function gameFactory(Cell, minePlanter, $interval, $log, announceBoard) {
     function Game(conf) {
       var game = this;
       var configurations = {
@@ -14,10 +14,11 @@
       angular.extend(configurations, conf);
       var stopWathcHandle, revealedCellsCount = 0,
           boardSize = configurations.xSize * configurations.ySize,
-          maxRevealedCells = boardSize - configurations.mines;
+          maxRevealedCells = boardSize - configurations.mines,
+          rows = [], isActive = true;
 
       function getNeighborCells(x, y) {
-        var neighborsCoordinates = getNeighborsCoordinates(x, y);
+        var neighborsCoordinates = getPossibleNeighborsCoordinates(x, y);
         return mapCoordinatesArrToCellsArr(neighborsCoordinates);
       }
 
@@ -25,7 +26,7 @@
         return (x >= 0 && x < configurations.xSize) && (y >= 0 && y < configurations.ySize);
       }
 
-      function getNeighborsCoordinates(xVal, yVal) {
+      function getPossibleNeighborsCoordinates(xVal, yVal) {
         var res = [], indentVal = [1, 0, -1];
         indentVal.forEach(function (indentX) {
           indentVal.forEach(function (indentY) {
@@ -63,16 +64,19 @@
       }
 
       function loseGame() {
-        $log.log('lost game');
-        cancelStopWatch();
         revealAllCells();
-        game.announceMsg = 'You Lose!';
+        endGame('You Lose!');
+      }
+
+      function endGame(announceMsg) {
+        isActive = false;
+        cancelStopWatch();
+        announceBoard.announce(announceMsg);
+        $log.log(announceMsg);
       }
 
       function winGame() {
-        $log.log('win game');
-        cancelStopWatch();
-        game.announceMsg = 'You Win!';
+        endGame('You Win!');
       }
 
       function updateElapsedTime(startTime) {
@@ -105,7 +109,7 @@
 
       function propagateCellRevealing(x, y) {
         if (surroundingMinesCount(x, y) === 0) {
-          var validNeighborCoordinates = getNeighborsCoordinates(x, y).filter(function (coordinate) {
+          var validNeighborCoordinates = getPossibleNeighborsCoordinates(x, y).filter(function (coordinate) {
             return isInsideTheGameGrid(coordinate.x, coordinate.y);
           });
           validNeighborCoordinates.forEach(function (coordinate) {
@@ -122,7 +126,7 @@
           x = arguments[0].x;
           y = arguments[0].y;
         }
-        return rows[y][x];
+        return rows[x][y];
       }
 
       function surroundingMinesCount(x, y) {
@@ -132,11 +136,27 @@
         }).length;
       }
 
-      var rows = [];
+      function initGame() {
+        announceBoard.announceForGivenMs('Take your move!', 1000);
+        for (var x = 0; x < configurations.xSize; x++) {
+          for (var y = 0, row = []; y < configurations.ySize; y++) {
+            row.push(new Cell(x, y));
+          }
+          rows.push(row);
+        }
+        minePlanter.genRandomIndexesInRange(boardSize, configurations.mines).forEach(function (indexPos) {
+          getCell(convertIndexToCoordinates(indexPos)).setMine();
+        });
+      }
+
       this.flagCount = 0;
+
       this.elapsedTime = 0;
 
       this.reveal = function reveal(lastPlayedCell) {
+        if (!isActive) {
+          return;
+        }
         startStopWatchIfNotRunning();
         if (!lastPlayedCell.isRevealed()) {
           lastPlayedCell.reveal();
@@ -150,6 +170,10 @@
       };
 
       this.toggleFlag = function toggleFlag(cell) {
+        if (!isActive) {
+          return;
+        }
+        startStopWatchIfNotRunning();
         if (cell.toggleFlag()) {
           game.flagCount++;
         } else {
@@ -161,20 +185,9 @@
         return cell.isMine() ? '' : surroundingMinesCount(cell.x, cell.y) || '';
       };
 
-      this.announceMsg = 'Take your move!';
-      for (var x = 0; x < configurations.xSize; x++) {
-        for (var y = 0, row = []; y < configurations.ySize; y++) {
-          row.push(new Cell(x, y));
-        }
-        rows.push(row);
-      }
-      minePlanter.genRandomIndexesInRange(boardSize, configurations.mines).forEach(function (indexPos) {
-        getCell(convertIndexToCoordinates(indexPos)).setMine();
-      });
-      $timeout(function () {
-        game.announceMsg = undefined;
-      }, 1000);
       this.getCell = getCell;
+
+      initGame();
     }
 
     return Game;

@@ -2,14 +2,13 @@
 
 describe('Service: game', function () {
   var planterMock, cellsCount, game, minesPosArr, conf;
-  var enableMines = true;
 
   function minePlanterMock() {
     var planterMock = {};
     planterMock.genRandomIndexesInRange = function () {
       return minesPosArr;
     };
-    spyOn(planterMock, 'generateMinePosition').andCallThrough();
+    spyOn(planterMock, 'genRandomIndexesInRange').andCallThrough();
     return planterMock;
   }
 
@@ -21,14 +20,16 @@ describe('Service: game', function () {
     spy.reveal = jasmine.createSpy('"cell.reveal()"').andCallFake(function () {
       revealed = true;
     });
-    spy.isRevealed = jasmine.createSpy('"cell.isRevealed()"').andReturn(revealed);
+    spy.isRevealed = jasmine.createSpy('"cell.isRevealed()"').andCallFake(function () {
+      return revealed;
+    });
     spy.toggleFlag = jasmine.createSpy('"cell.toggleFlag()"').andCallFake(function () {
       flag = !flag;
       return flag;
     });
     spy.isFlagged = jasmine.createSpy('"cell.isFlagged()"').andReturn(flag);
-    spy.isMine = jasmine.createSpy('"cell.isMine()"').andCallFake(function (){
-      return isMine && enableMines;
+    spy.isMine = jasmine.createSpy('"cell.isMine()"').andCallFake(function () {
+      return isMine;
     });
     spy.setMine = jasmine.createSpy('"cell.setMine()"').andCallFake(function () {
       isMine = true;
@@ -38,8 +39,9 @@ describe('Service: game', function () {
   }
 
   function initializeGame(minesArr) {
+    conf.mines = minesArr.length;
     cellsCount = -1;
-    minesPosArr = minesArr.slice(0);
+    minesPosArr = minesArr;
     inject(function (Game) {
       game = new Game(conf);
     });
@@ -58,8 +60,7 @@ describe('Service: game', function () {
     beforeEach(function () {
       conf = {
         xSize: 3,
-        ySize: 3,
-        mines: 5
+        ySize: 3
       };
       initializeGame([0, 2, 4, 6, 8]);
     });
@@ -106,10 +107,7 @@ describe('Service: game', function () {
 
     describe('revealing propagation:', function () {
       beforeEach(function () {
-        enableMines = false;
-      });
-      afterEach(function () {
-        enableMines = true;
+        initializeGame([]);
       });
 
       it('should reveal all the board if there is no mines', function () {
@@ -117,26 +115,24 @@ describe('Service: game', function () {
         game.reveal(someCell);
         for (var x = 0; x < conf.xSize; x++) {
           for (var y = 0; y < conf.ySize; y++) {
-            expect(game.getCell(x, y).isRevealed()).toBeTruthy();
+            expect(game.getCell(x, y).isRevealed()).toBe(true);
           }
         }
       });
-
     });
   });
   describe('large board (10x10) tests:', function () {
     beforeEach(function () {
       conf = {
         xSize: 10,
-        ySize: 10,
-        mines: 10
+        ySize: 10
       };
     });
 
     function testCellInRange(xRight, xLeft, yUp, yBottom, expectFunc) {
       for (var x = xRight; x < xLeft; x++) {
         for (var y = yUp; y < yBottom; y++) {
-          expect(expectFunc(game.getCell(x, y))).toBeTruthy();
+          expect(expectFunc(game.getCell(x, y))).toBe(true);
         }
       }
     }

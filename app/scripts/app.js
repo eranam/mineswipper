@@ -3,6 +3,7 @@
 //add services, directives, controllers, filters, etc. in this module
 //avoid adding module dependencies for this module
 angular
+
     .module('mineswipperAppInternal', []);
 
 //add module dependencies & config and run blocks in this module
