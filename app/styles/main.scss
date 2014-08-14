@@ -50,8 +50,8 @@ html {
 .announce-msg {
   position: absolute;
   width: 16%;
-  height: 60px;
-  line-height: 60px;
+  min-height: 40px;
+  line-height: 40px;
   top: 40%;
   left: 42%;
   margin: auto;

@@ -18,6 +18,6 @@ module.exports = function (grunt) {
     protractor: true
   });
   var yeoman = grunt.config('yeoman');
-  yeoman.api = 'http://localhost:3000/';
+  yeoman.api = 'http://localhost:3000/_api';
   grunt.config('yeoman', yeoman);
 };
