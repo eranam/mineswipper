@@ -5,6 +5,7 @@
   /* @ngInject */
   function MinesweeperServer($resource) {
     // AngularJS will instantiate a singleton by calling "new" on this function
+
     var apiUrl = '/_api/minesweeper/game/';
     var server = $resource(apiUrl);
     var games = [];

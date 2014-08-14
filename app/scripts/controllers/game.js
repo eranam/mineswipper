@@ -9,7 +9,7 @@
       ySize: 10,
       mines: 10
     };
-    //$scope.conf = $scope.conf || {};
+    $scope.conf = $scope.conf || {};
     angular.extend($scope.conf, defaultConf);
 
     this.game = undefined;

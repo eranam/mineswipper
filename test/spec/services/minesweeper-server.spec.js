@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Service: minesweeperServer', function () {
+xdescribe('Service: minesweeperServer', function () {
   var $httpBackend, minesweeperServer;
   // load the service's module
   beforeEach(function () {
@@ -25,7 +25,7 @@ describe('Service: minesweeperServer', function () {
     expect(minesweeperServer.getData()).toEqual([]);
   });
 
-  xit('should post the current game to the server', function () {
+  it('should post the current game to the server', function () {
     $httpBackend.expectPOST('/_api/minesweeper/game/').respond('1');
     minesweeperServer.load();
     $httpBackend.flush();
